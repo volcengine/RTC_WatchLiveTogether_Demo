@@ -1,6 +1,0 @@
-Third Party files 
-YUTimer 
-Project Link:  https://github.com/YBYHunter/YUTimer
-Copyright yu. All rights reserved.
-SPDX-Identifier-License:  MIT
-
