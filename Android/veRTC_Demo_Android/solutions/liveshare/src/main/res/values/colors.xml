@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <color name="color_F20E0825">#F20E0825</color>
+    <color name="color_1664FF">#1664FF</color>
+    <color name="color_46FFFFFF">#46FFFFFF</color>
+    <color name="color_B3FFFFFF">#B3FFFFFF</color>
+    <color name="color_000000_20">#14000000</color>
+    <color name="color_000000_30">#1E000000</color>
+    <color name="color_000000_50">#32000000</color>
+    <color name="color_000000_80">#50000000</color>
+    <color name="color_86909C">#86909C</color>
+    <color name="color_272E3B">#272E3B</color>
+    <color name="color_4080FF">#4080FF</color>
+    <color name="color_FFFFFF_50">#32FFFFFF</color>
+    <color name="color_FFFFFF_26">#1AFFFFFF</color>
+    <color name="color_28C840">#28C840</color>
+</resources>
