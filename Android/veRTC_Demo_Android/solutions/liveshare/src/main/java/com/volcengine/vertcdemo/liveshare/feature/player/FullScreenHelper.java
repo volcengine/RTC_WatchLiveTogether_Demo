@@ -144,7 +144,7 @@ public class FullScreenHelper {
     }
 
     /**
-     * 进入全屏
+     * 退出全屏
      */
     @SuppressLint("SourceLockedOrientationActivity")
     @MainThread

@@ -11,7 +11,9 @@
 @implementation LiveShareRTSManager
 
 + (void)requestJoinRoomWithRoomID:(NSString *)roomID
-                            block:(void(^)(LiveShareRoomModel *roomModel, NSArray<LiveShareUserModel *> *userList, RTMACKModel *model))block {
+                            block:(void(^)(LiveShareRoomModel *roomModel,
+                                           NSArray<LiveShareUserModel *> *userList,
+                                           RTMACKModel *model))block {
     
     int mic = [LiveShareMediaModel shared].enableAudio? 1 : 0;
     int camera = [LiveShareMediaModel shared].enableVideo? 1 : 0;
@@ -36,7 +38,6 @@
         if (block) {
             block(roomModel, userList, ackModel);
         }
-        NSLog(@"[%@]-twvJoinRoom %@ \n %@", [self class], dic, ackModel.response);
     }];
 }
 
@@ -211,6 +212,43 @@
             block(ackModel);
         }
         NSLog(@"[%@]-twvClearUser %@ \n %@", [self class], dic, ackModel.response);
+    }];
+}
+
++ (void)reconnectWithBlock:(void (^)(LiveShareRoomModel *roomModel,
+                                     NSArray<LiveShareUserModel *> *userList,
+                                     RTMACKModel *model))block {
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
+    
+    [[LiveShareRTCManager shareRtc] emitWithAck:@"twvReconnect"
+                                           with:dic
+                                          block:^(RTMACKModel * _Nonnull ackModel) {
+        LiveShareRoomModel *roomModel = nil;
+        NSArray *userList = nil;
+        if ([LiveShareRTSManager ackModelResponseClass:ackModel]) {
+            roomModel = [LiveShareRoomModel yy_modelWithJSON:ackModel.response[@"room"]];
+            userList = [NSArray yy_modelArrayWithClass:[LiveShareUserModel class] json:ackModel.response[@"user_list"]];
+        }
+        if (block) {
+            block(roomModel, userList, ackModel);
+        }
+    }];
+}
+
++ (void)getUserListStatusWithBlock:(void (^)(NSArray<LiveShareUserModel *> *userList,
+                                             RTMACKModel *model))block {
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
+    
+    [[LiveShareRTCManager shareRtc] emitWithAck:@"twvGetUserList"
+                                           with:dic
+                                          block:^(RTMACKModel * _Nonnull ackModel) {
+        NSArray *userList = nil;
+        if ([LiveShareRTSManager ackModelResponseClass:ackModel]) {
+            userList = [NSArray yy_modelArrayWithClass:[LiveShareUserModel class] json:ackModel.response[@"user_list"]];
+        }
+        if (block) {
+            block(userList, ackModel);
+        }
     }];
 }
 

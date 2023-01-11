@@ -48,6 +48,7 @@ import com.volcengine.vertcdemo.liveshare.bean.inform.LeaveRoomInform;
 import com.volcengine.vertcdemo.liveshare.bean.inform.TurnOnOffMicCameraInform;
 import com.volcengine.vertcdemo.liveshare.bean.inform.UpdateLiveUrlInform;
 import com.volcengine.vertcdemo.liveshare.bean.inform.UpdateRoomSceneInform;
+import com.volcengine.vertcdemo.liveshare.bean.response.GetUserListResponse;
 import com.volcengine.vertcdemo.liveshare.bean.response.JoinRoomResponse;
 import com.volcengine.vertcdemo.liveshare.bean.response.LeaveShareResponse;
 import com.volcengine.vertcdemo.liveshare.core.CameraMicManger;
@@ -137,15 +138,27 @@ public class LiveShareActivity extends BaseActivity {
         context.startActivityForResult(intent, requestCode);
     }
 
+
+    private String mLastMicStatus;
+    private String mLastCameraStatus;
+
     /**
      * 监听用户动作更新摄像头、麦克风UI
      */
     private final Observer mCameraMicOperationListener = (Observer, data) -> {
-        mRTSClient.turnOnOrOffMicCamera(
-                mRoomId,
-                mSelfUid,
-                mCameraMicManger.isMicOn() ? "1" : "0",
-                mCameraMicManger.isCameraOn() ? "1" : "0");
+        final String micStatus = mCameraMicManger.isMicOn() ? "1" : "0";
+        final String cameraStatus = mCameraMicManger.isCameraOn() ? "1" : "0";
+
+        boolean needNotifyRemote = !micStatus.equals(mLastMicStatus) || !cameraStatus.equals(mLastCameraStatus);
+        mLastMicStatus = micStatus;
+        mLastCameraStatus = cameraStatus;
+        if (needNotifyRemote) {
+            mRTSClient.turnOnOrOffMicCamera(
+                    mRoomId,
+                    mSelfUid,
+                    micStatus,
+                    cameraStatus);
+        }
         updateCameraMicStatusUi();
     };
 
@@ -190,6 +203,31 @@ public class LiveShareActivity extends BaseActivity {
             mRemoteUsers.addAll(joinRoomResponse.users);
             removeRemoteUser(mSelfUid);
         }
+        getUserListFromServer(mRoomId, mSelfUid);
+    }
+
+    /**
+     * 主动从服务端获取用户列表
+     * @param roomId 房间id
+     * @param userId 用户id
+     */
+    private void getUserListFromServer(String roomId, String userId) {
+        IRequestCallback<GetUserListResponse> callback = new IRequestCallback<GetUserListResponse>() {
+            @Override
+            public void onSuccess(GetUserListResponse data) {
+                if (data != null && data.userList != null) {
+                    mRemoteUsers.addAll(data.userList);
+                    removeRemoteUser(mSelfUid);
+                    showRemoteUsers();
+                }
+            }
+
+            @Override
+            public void onError(int errorCode, String message) {
+
+            }
+        };
+        LiveShareRTCManger.ins().getRTSClient().getUserList(roomId, userId, callback);
     }
 
     private void initView() {
@@ -197,7 +235,7 @@ public class LiveShareActivity extends BaseActivity {
             mCameraMicManger.switchCamera();
             IMEUtils.closeIME(v);
         }));
-        mViewBinding.roomIdTv.setText(getString(R.string.room_id, mRoomId).replace("twv_",""));
+        mViewBinding.roomIdTv.setText(getString(R.string.room_id, mRoomId).replace("twv_", ""));
         mViewBinding.roomIdTv.setOnClickListener(DebounceClickListener.create(IMEUtils::closeIME));
         mViewBinding.hangupIv.setOnClickListener(DebounceClickListener.create(v -> {
             boolean isHost = !TextUtils.isEmpty(mSelfUid) && TextUtils.equals(mSelfUid, mRoom.hostUserId);
@@ -232,14 +270,7 @@ public class LiveShareActivity extends BaseActivity {
             mLiveUrlDialog = new LiveUrlDialog(this, mTriggerLiveShareListener, getLifecycle());
             mLiveUrlDialog.show();
         }));
-        mViewBinding.settingIv.setOnClickListener(DebounceClickListener.create(v -> {
-            if (mVoiceSettingDialog != null) {
-                mVoiceSettingDialog.dismiss();
-                mVoiceSettingDialog = null;
-            }
-            mVoiceSettingDialog = new VoiceSettingDialog(this, getLifecycle());
-            mVoiceSettingDialog.show();
-        }));
+        mViewBinding.settingIv.setOnClickListener(DebounceClickListener.create(v -> showVoiceSettingDialog()));
         mViewBinding.shareLiveContainer.setOnClickListener(DebounceClickListener.create(IMEUtils::closeIME));
 
         //bind data to view
@@ -294,6 +325,8 @@ public class LiveShareActivity extends BaseActivity {
      * @param micOn  被渲染视频用户麦克风是否打开
      */
     private void addSmallRenderView(String userId, boolean micOn) {
+        View lastView = mSmallRenderViews.get(userId);
+        Utils.removeFromParent(lastView);
         LayoutSmallVideoBinding smallVideoItem = LayoutSmallVideoBinding.inflate(LayoutInflater.from(this));
         smallVideoItem.getRoot().setOnClickListener(DebounceClickListener.create(v -> {
             if (mRoom.scene == Room.SCENE_SHARE) return;
@@ -361,8 +394,8 @@ public class LiveShareActivity extends BaseActivity {
     /**
      * 将渲染视图绑定到父容器，UI才可见
      *
-     * @param userId      渲染视图拥有者用户id
-     * @param container   父容器
+     * @param userId    渲染视图拥有者用户id
+     * @param container 父容器
      */
     private void bindRenderViewToContainer(String userId, ViewGroup container) {
         if (userId == null || container == null) {
@@ -624,6 +657,8 @@ public class LiveShareActivity extends BaseActivity {
                 .remove(mShareFragment)
                 .commitAllowingStateLoss();
         mShareFragment = null;
+        dismissVoiceSettingDialog();
+        mDataManger.resetVideoVolume();
     }
 
     @Override
@@ -672,6 +707,10 @@ public class LiveShareActivity extends BaseActivity {
         Log.i(TAG, "onUserJoin uid:" + userId);
         if (TextUtils.isEmpty(userId) || TextUtils.equals(userId, mSelfUid)) return;
         mRemoteUsers.add(inform.user);
+
+        // 短时间杀进程重进case
+        RTCUserJoinEvent rtcUserJoinEvent = new RTCUserJoinEvent(inform.user.userId, inform.user.isMicOn());
+        onRTCUserJoinEvent(rtcUserJoinEvent);
     }
 
     /**
@@ -717,9 +756,10 @@ public class LiveShareActivity extends BaseActivity {
 
     /**
      * 更新用户的媒体状态
-     * @param userId 用户id
+     *
+     * @param userId   用户id
      * @param cameraOn 摄像头状态
-     * @param micOn 麦克风状态
+     * @param micOn    麦克风状态
      */
     private void updateUserMediaStatus(String userId,
                                        @User.CameraStatus int cameraOn,
@@ -877,5 +917,17 @@ public class LiveShareActivity extends BaseActivity {
     private void refreshUserSpeakStatus() {
         mHandler.removeCallbacks(mUserSpeakStatusTask);
         mHandler.post(mUserSpeakStatusTask);
+    }
+
+    void showVoiceSettingDialog() {
+        dismissVoiceSettingDialog();
+        mVoiceSettingDialog = new VoiceSettingDialog(this, getLifecycle());
+        mVoiceSettingDialog.show();
+    }
+
+    void dismissVoiceSettingDialog() {
+        if (mVoiceSettingDialog != null) {
+            mVoiceSettingDialog.dismiss();
+        }
     }
 }

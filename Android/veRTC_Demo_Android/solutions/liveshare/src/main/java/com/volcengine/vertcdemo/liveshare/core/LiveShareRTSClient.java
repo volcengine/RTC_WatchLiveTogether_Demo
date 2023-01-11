@@ -16,6 +16,7 @@ import com.volcengine.vertcdemo.core.net.IBroadcastListener;
 import com.volcengine.vertcdemo.core.net.IRequestCallback;
 import com.volcengine.vertcdemo.core.net.rts.RTSBaseClient;
 import com.volcengine.vertcdemo.core.net.rts.RTSBizInform;
+import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
 import com.volcengine.vertcdemo.core.net.rts.RTSInfo;
 import com.volcengine.vertcdemo.liveshare.bean.Room;
 import com.volcengine.vertcdemo.liveshare.bean.inform.CloseRoomInform;
@@ -26,6 +27,7 @@ import com.volcengine.vertcdemo.liveshare.bean.inform.TurnOnOffMicCameraInform;
 import com.volcengine.vertcdemo.liveshare.bean.inform.UpdateLiveUrlInform;
 import com.volcengine.vertcdemo.liveshare.bean.inform.UpdateRoomSceneInform;
 import com.volcengine.vertcdemo.liveshare.bean.response.ClearUserResponse;
+import com.volcengine.vertcdemo.liveshare.bean.response.GetUserListResponse;
 import com.volcengine.vertcdemo.liveshare.bean.response.JoinRoomResponse;
 import com.volcengine.vertcdemo.liveshare.bean.response.JoinShareResponse;
 import com.volcengine.vertcdemo.liveshare.bean.response.LeaveShareResponse;
@@ -37,6 +39,7 @@ public class LiveShareRTSClient extends RTSBaseClient {
     private static final String CLEAR_USER = "twvClearUser";
     private static final String JOIN_ROOM = "twvJoinRoom";
     private static final String LEAVE_ROOM = "twvLeaveRoom";
+    private static final String GET_USER_LIST = "twvGetUserList";
     private static final String JOIN_SHARE = "twvJoinTw";
     private static final String SEND_MESSAGE = "twvSendMsg";
     private static final String LEAVE_SHARE = "twvLeaveTw";
@@ -52,14 +55,25 @@ public class LiveShareRTSClient extends RTSBaseClient {
     /**
      * 进入场景清除自己信息防止上次非正常退出
      */
-    public void clearUser(String userId,IRequestCallback<ClearUserResponse> callback) {
-        if (isNetworkDisabled()){
-            return;
+    public boolean clearUser(String userId, Runnable callback) {
+        if (isNetworkDisabled()) {
+            return false;
         }
         AppExecutors.networkIO().execute(() -> {
-            JsonObject params = getCommonParams(CLEAR_USER, null, userId);
-            sendServerMessage(CLEAR_USER, "", params, null, callback);
+            JsonObject params = getCommonParams(CLEAR_USER, "", userId);
+            sendServerMessage(CLEAR_USER, "", params, null, new IRequestCallback<RTSBizResponse>() {
+                @Override
+                public void onSuccess(RTSBizResponse data) {
+                    callback.run();
+                }
+
+                @Override
+                public void onError(int errorCode, String message) {
+                    callback.run();
+                }
+            });
         });
+        return true;
     }
 
     /**
@@ -72,14 +86,14 @@ public class LiveShareRTSClient extends RTSBaseClient {
      * @param cameraOn 摄像头是否打开
      * @param callback 加房回调
      */
-    public void joinRoom(String roomId,
-                         String userId,
-                         String userName,
-                         boolean micOn,
-                         boolean cameraOn,
-                         IRequestCallback<JoinRoomResponse> callback) {
+    public boolean joinRoom(String roomId,
+                            String userId,
+                            String userName,
+                            boolean micOn,
+                            boolean cameraOn,
+                            IRequestCallback<JoinRoomResponse> callback) {
         if (isNetworkDisabled()) {
-            return;
+            return false;
         }
         AppExecutors.networkIO().execute(() -> {
             JsonObject params = getCommonParams(JOIN_ROOM, roomId, userId);
@@ -88,6 +102,7 @@ public class LiveShareRTSClient extends RTSBaseClient {
             params.addProperty("camera", cameraOn ? 1 : 0);
             sendServerMessage(JOIN_ROOM, roomId, params, JoinRoomResponse.class, callback);
         });
+        return true;
     }
 
     /**
@@ -104,6 +119,19 @@ public class LiveShareRTSClient extends RTSBaseClient {
         AppExecutors.networkIO().execute(() -> {
             JsonObject params = getCommonParams(LEAVE_ROOM, roomId, userId);
             sendServerMessage(LEAVE_ROOM, roomId, params, null, null);
+        });
+    }
+
+    /**
+     * 业务主动获取房间内用户列表
+     * @param roomId 房间id
+     * @param userId 当前登录用户id
+     * @param callback 回调
+     */
+    public void getUserList(String roomId, String userId, IRequestCallback<GetUserListResponse> callback) {
+        AppExecutors.networkIO().execute(() -> {
+            JsonObject params = getCommonParams(GET_USER_LIST, roomId, userId);
+            sendServerMessage(GET_USER_LIST, roomId, params, GetUserListResponse.class, callback);
         });
     }
 

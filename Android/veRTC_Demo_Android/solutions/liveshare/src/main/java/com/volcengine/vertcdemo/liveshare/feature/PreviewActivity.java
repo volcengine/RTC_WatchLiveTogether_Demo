@@ -62,7 +62,7 @@ public class PreviewActivity extends BaseActivity {
     private CameraMicManger mCameraMicManger;
     private RTCVideo mRTCEngine;
     private String mUserId;
-    private JoinRoomResponse mResponse;
+    private Runnable mPendingJoinRoom;
 
     private final TextWatcherAdapter mTextWatcher = new TextWatcherAdapter() {
         @Override
@@ -111,6 +111,7 @@ public class PreviewActivity extends BaseActivity {
         if (mDataManger.getCameraMicManager().isMicOn()) {
             mDataManger.getCameraMicManager().openMic();
         }
+        updateVideoView();
     }
 
     private void initData() {
@@ -134,45 +135,42 @@ public class PreviewActivity extends BaseActivity {
         InputFilter[] meetingIDFilters = new InputFilter[]{meetingIDFilter};
         mViewBinding.roomIdEt.setFilters(meetingIDFilters);
         mViewBinding.micOnOffIv.setOnClickListener(DebounceClickListener.create(v -> mCameraMicManger.toggleMic()));
-        mViewBinding.cameraOnOffIv.setOnClickListener(DebounceClickListener.create(v -> mCameraMicManger.toggleCamera()));
+        mViewBinding.cameraOnOffIv.setOnClickListener(DebounceClickListener.create(v -> {
+            mCameraMicManger.toggleCamera();
+            updateVideoView();
+        }));
         mViewBinding.effectSetting.setOnClickListener(DebounceClickListener.create(v ->
                 LiveShareRTCManger.ins().openEffectDialog(PreviewActivity.this)));
         mViewBinding.joinRoomBtn.setOnClickListener(DebounceClickListener.create(v -> {
+            if (mRTSClient == null) {
+                return;
+            }
             final String input = mViewBinding.roomIdEt.getText().toString().trim();
             if (TextUtils.isEmpty(input)) {
                 SafeToast.show(this, getString(R.string.room_id_empty_hint), Toast.LENGTH_SHORT);
                 return;
             }
-            final String roomId = "twv_" + input;
-            clearUser(new IRequestCallback<ClearUserResponse>() {
-                @Override
-                public void onSuccess(ClearUserResponse data) {
-                    joinRoom(roomId);
-                }
 
-                @Override
-                public void onError(int errorCode, String message) {
-                    joinRoom(roomId);
-                }
+            final String roomId = "twv_" + input;
+            boolean requested = mRTSClient.clearUser(mUserId, () -> {
+                joinRoom(roomId);
             });
+
+            if (requested) { // 请求已经发出，禁用按钮，防止重复发起请求
+                disableJoinRoomButton();
+            } else {
+                enableJoinRoomButton();
+            }
         }));
         requestPermissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA);
     }
 
-    private void clearUser(IRequestCallback<ClearUserResponse> callback) {
-        if (mRTSClient == null) {
-            return;
-        }
-        mRTSClient.clearUser(mUserId, callback);
-    }
-
     private void joinRoom(String roomId) {
-        if (mRTSClient == null) {
-            return;
-        }
         String userName = SolutionDataManager.ins().getUserName();
         //业务入房，如果没有房间创建一个房间
-        mRTSClient.joinRoom(roomId, mUserId, userName, mCameraMicManger.isMicOn(), mCameraMicManger.isCameraOn(),
+        boolean requested = mRTSClient.joinRoom(roomId,
+                mUserId, userName,
+                mCameraMicManger.isMicOn(), mCameraMicManger.isCameraOn(),
                 new IRequestCallback<JoinRoomResponse>() {
                     @Override
                     public void onSuccess(JoinRoomResponse data) {
@@ -182,29 +180,54 @@ public class PreviewActivity extends BaseActivity {
                         Room room = data == null ? null : data.room;
                         if (room == null) {
                             onError(RTSBaseClient.ERROR_CODE_DEFAULT, getString(R.string.join_room_error_rtc_room_empty));
-                            return;
-                        }
-                        if (TextUtils.isEmpty(room.rtcToken)) {
+                        } else if (TextUtils.isEmpty(room.rtcToken)) {
                             onError(RTSBaseClient.ERROR_CODE_DEFAULT, getString(R.string.join_room_error_rtc_token_empty));
-                            return;
+                        } else {
+                            joinRTCRoom(room, data);
                         }
-                        mResponse = data;
-                        LiveShareRTCManger.ins().joinRoom(room.rtcToken, roomId, mUserId);
                     }
 
                     @Override
                     public void onError(int errorCode, String message) {
+                        Log.i(TAG, "joinRoom biz failed message: " + message + ",errorCode:" + errorCode);
+                        runOnUiThread(() -> enableJoinRoomButton());
                         if (RTSBaseClient.ERROR_CODE_USERNAME_SAME == errorCode) {
                             SafeToast.show(getString(R.string.join_room_error_has_in));
-                            return;
-                        }
-                        if (RTSBaseClient.ERROR_CODE_ROOM_FULL == errorCode) {
+                        } else if (RTSBaseClient.ERROR_CODE_ROOM_FULL == errorCode) {
                             SafeToast.show(getString(R.string.join_room_error_room_full));
-                            return;
+                        } else {
+                            SafeToast.show(message);
                         }
-                        Log.i(TAG, "joinRoom biz failed message: " + message + ",errorCode:" + errorCode);
                     }
                 });
+
+        if (requested) { // 请求已经发出，禁用按钮，防止重复发起请求
+            disableJoinRoomButton();
+        } else {
+            enableJoinRoomButton();
+        }
+    }
+
+    void disableJoinRoomButton() {
+        mViewBinding.joinRoomBtn.setEnabled(false);
+    }
+
+    void enableJoinRoomButton() {
+        mViewBinding.joinRoomBtn.setEnabled(true);
+    }
+
+    void joinRTCRoom(Room room, JoinRoomResponse data) {
+        mPendingJoinRoom = () -> LiveShareActivity.startForResult(PreviewActivity.this, REQUEST_CODE_START_LIVE, data);
+        LiveShareRTCManger.ins().joinRoom(room.rtcToken, room.roomId, mUserId);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRTCErrorEvent(RTCErrorEvent event) {
+        if (mPendingJoinRoom != null) {
+            mPendingJoinRoom.run();
+        }
+        mPendingJoinRoom = null;
+        mViewBinding.joinRoomBtn.postDelayed(this::enableJoinRoomButton, 100);
     }
 
     /**
@@ -215,7 +238,6 @@ public class PreviewActivity extends BaseActivity {
         videoCanvas.isScreen = false;
         videoCanvas.renderMode = VideoCanvas.RENDER_MODE_HIDDEN;
         videoCanvas.uid = mUserId;
-        if (TextUtils.isEmpty(mUserId)) return;
         TextureView renderView = mDataManger.getUserRenderView(mUserId);
         videoCanvas.renderView = renderView;
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -224,6 +246,17 @@ public class PreviewActivity extends BaseActivity {
         Utils.attachViewToViewGroup(mViewBinding.previewContainerFl, renderView, params);
         mViewBinding.previewContainerFl.setVisibility(View.VISIBLE);
         mRTCEngine.setLocalVideoCanvas(StreamIndex.STREAM_INDEX_MAIN, videoCanvas);
+    }
+
+    /**
+     * 根据用户视频采集状态更新视图
+     */
+    private void updateVideoView() {
+        if (mDataManger.getCameraMicManager().isCameraOn()) {
+            setLocalRenderView();
+        } else {
+            mViewBinding.previewContainerFl.removeAllViews();
+        }
     }
 
     @Override
@@ -243,6 +276,7 @@ public class PreviewActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         //从连麦页返回
         if (REQUEST_CODE_START_LIVE == requestCode) {
+            enableJoinRoomButton();
             //如果是因为重复登录被踢出，退回场景选择页
             if (resultCode == LiveShareActivity.RESULT_CODE_DUPLICATE_LOGIN) {
                 finish();
@@ -289,12 +323,5 @@ public class PreviewActivity extends BaseActivity {
         mCameraMicManger.deleteObserver(mCameraMicOperationListener);
         mDataManger.clearUp();
         SolutionDemoEventManager.unregister(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRTCErrorEvent(RTCErrorEvent event) {
-        if (event.errorCode == 0 && mResponse != null) {
-            LiveShareActivity.startForResult(PreviewActivity.this, REQUEST_CODE_START_LIVE, mResponse);
-        }
     }
 }

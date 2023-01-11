@@ -63,6 +63,9 @@ LiveShareVideoComponentDelegate
     
     [[LiveShareRTCManager shareRtc] startAudioMixing];
     
+    // 设置初始混音音量
+    [LiveShareRTCManager shareRtc].audioMixingVolume = 0.1;
+    
     [self addOrientationNotice];
     
     [self handelPortraitUI];
@@ -387,7 +390,6 @@ LiveShareVideoComponentDelegate
 /// 更新用户渲染视图
 - (void)updateUserVideoRender {
     [self.userListComponent updateData];
-//    self.userListComponent.dataArray = [[LiveShareDataManager shared] getAllUserList];
 }
 
 /// 添加消息

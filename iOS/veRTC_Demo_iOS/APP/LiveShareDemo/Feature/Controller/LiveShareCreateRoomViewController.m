@@ -83,7 +83,7 @@ UIGestureRecognizerDelegate
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor grayColor];
+    self.view.backgroundColor = [UIColor colorFromRGBHexString:@"#0D0E12"];
     
     [self initUIComponents];
     
@@ -435,7 +435,7 @@ UIGestureRecognizerDelegate
 - (UIImageView *)emptImageView {
     if (!_emptImageView) {
         _emptImageView = [[UIImageView alloc] init];
-        _emptImageView.image = [UIImage imageNamed:@"meeting_login_empt" bundleName:HomeBundleName];
+        _emptImageView.image = [UIImage imageNamed:@"login_empt" bundleName:HomeBundleName];
         _emptImageView.hidden = YES;
     }
     return _emptImageView;

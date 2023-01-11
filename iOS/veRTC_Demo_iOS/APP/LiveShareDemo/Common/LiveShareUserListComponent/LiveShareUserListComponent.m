@@ -88,27 +88,23 @@ static CGFloat const kVerticalSpaceWidth = 6;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    
     CGFloat width = kItemWidth;
     CGFloat height = kItemWidth;
-    
+
     if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
         if (self.needShowHeaderUser) {
             width = kItemWidth + kHorizontalSpaceWidth;
-        }
-        else {
+        } else {
             width = 0;
         }
-    }
-    else {
+    } else {
         if (self.needShowHeaderUser) {
             height = kItemWidth + kVerticalSpaceWidth;
-        }
-        else {
+        } else {
             height = 0;
         }
     }
-    
+
     return CGSizeMake(width, height);
 }
 
@@ -119,8 +115,7 @@ static CGFloat const kVerticalSpaceWidth = 6;
 - (void)userHiddenViewTap {
     if (self.collectionView.isHidden) {
         [self expandUserCollectionView];
-    }
-    else {
+    } else {
         [self foldUserCollectionView];
     }
 }
@@ -235,49 +230,44 @@ static CGFloat const kVerticalSpaceWidth = 6;
 /// @param scrollDirection 滑动方向
 - (void)setScrollDirection:(UICollectionViewScrollDirection)scrollDirection {
     _scrollDirection = scrollDirection;
-    
+
     self.collectionView.hidden = NO;
-    
+
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionView.collectionViewLayout;
     layout.scrollDirection = scrollDirection;
-    
+
     if (scrollDirection == UICollectionViewScrollDirectionHorizontal) {
-        
         layout.minimumLineSpacing = kHorizontalSpaceWidth;
-        
+
         self.userHiddenView.hidden = YES;
         [self layoutScrollDirectionHorizontal];
-    }
-    else {
+    } else {
         [self.collectionView mas_remakeConstraints:^(MASConstraintMaker *make) {
-            make.top.equalTo(self.userHiddenView.mas_bottom).offset(kHorizontalSpaceWidth);
-            make.bottom.equalTo(self.superView).offset(-kVerticalSpaceWidth);
-            make.width.mas_equalTo(kItemWidth);
-            make.centerX.equalTo(self.userHiddenView);
+          make.top.equalTo(self.userHiddenView.mas_bottom).offset(kHorizontalSpaceWidth);
+          make.bottom.equalTo(self.superView).offset(-kVerticalSpaceWidth);
+          make.width.mas_equalTo(kItemWidth);
+          make.centerX.equalTo(self.userHiddenView);
         }];
-        
+
         layout.minimumLineSpacing = kVerticalSpaceWidth;
-        
+
         self.userHiddenView.hidden = NO;
         self.arrowImageView.transform = CGAffineTransformIdentity;
     }
 }
 
 - (void)updateData {
-    
     if ([[[LiveShareDataManager shared] getFullUserModel].uid isEqualToString:[LocalUserComponent userModel].uid] && self.shouldSwitchFullUser) {
         self.needShowHeaderUser = NO;
-    }
-    else {
+    } else {
         self.needShowHeaderUser = YES;
         self.localUserCell.userModel = [[LiveShareDataManager shared] getLocalUserModel];
     }
-    
+
     if (self.shouldSwitchFullUser) {
         self.fullUserModel = [[LiveShareDataManager shared] getFullUserModel];
         self.dataArray = [[LiveShareDataManager shared] getUserListWithoutFullUserList];
-    }
-    else {
+    } else {
         self.dataArray = [[LiveShareDataManager shared] getAllUserList];
     }
 }

@@ -42,10 +42,13 @@ LiveShareRTCManagerDelegate
         [[LiveShareRTCManager shareRtc] bindCanvasViewWithUid:[LocalUserComponent userModel].uid];
         
         [self addListener];
+        __weak __typeof(self) wself = self;
         [LiveShareRTCManager shareRtc].delegate = self;
-        __weak typeof(self) weakSelf = self;
-        [LiveShareRTCManager shareRtc].rtcSameUserJoinRoomBlock = ^(NSString * _Nonnull roomId, NSInteger errorCode) {
-            [weakSelf sameUserJoinRoomLeave];
+        [LiveShareRTCManager shareRtc].rtcJoinRoomBlock = ^(NSString * _Nonnull roomId, NSInteger errorCode, NSInteger joinType) {
+            if (errorCode == 0 && joinType != 0) {
+                // 断网重连
+                [wself reconnectLiveRoom];
+            }
         };
     }
     return self;
@@ -58,6 +61,8 @@ LiveShareRTCManagerDelegate
     
     // resume local render effect
     [self.beautyCompoments resumeLocalEffect];
+    
+    [self loadDataWithGetUserList];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -79,58 +84,55 @@ LiveShareRTCManagerDelegate
 }
 
 #pragma mark - LiveShareBottomButtonsViewDelegate
+
 - (void)liveShareBottomButtonsView:(LiveShareBottomButtonsView *)view didClickButtonType:(LiveShareButtonType)type {
     switch (type) {
         case LiveShareButtonTypeAudio: {
-            
             [self updateMediaWithMic:view.enableAudio camera:view.enableVideo];
-            
+
             [[LiveShareRTCManager shareRtc] muteLocalAudio:!view.enableAudio];
-        }
-            break;
-            
+        } break;
+
         case LiveShareButtonTypeVideo: {
-            
             [self updateMediaWithMic:view.enableAudio camera:view.enableVideo];
-            
+
             [[LiveShareRTCManager shareRtc] enableLocalVideo:view.enableVideo];
-        }
-            break;
-            
+        } break;
+
         case LiveShareButtonTypeBeauty: {
             if (self.beautyCompoments) {
-                [self.beautyCompoments showWithType:EffectBeautyRoleTypeHost fromSuperView:self.view dismissBlock:^(BOOL result) {
-                }];
+                [self.beautyCompoments showWithType:EffectBeautyRoleTypeHost
+                                      fromSuperView:self.view
+                                       dismissBlock:^(BOOL result){
+                                       }];
             } else {
                 [[ToastComponent shareToastComponent] showWithMessage:veString(@"open_souurce_code_beauty_tip")];
             }
-        }
-            break;
-            
+        } break;
+
         case LiveShareButtonTypeWatch: {
             LiveShareInputURLView *inputView = [[LiveShareInputURLView alloc] init];
             [inputView showInview:self.view];
             __weak typeof(self) weakSelf = self;
-            inputView.onUserInputVideoURLBlock = ^(NSString * _Nonnull videoURL, LiveShareVideoDirection videoDirection) {
-                [LiveShareDataManager shared].roomModel.videoURL = videoURL;
-                [LiveShareDataManager shared].roomModel.videoDirection = videoDirection;
-                
-                [weakSelf pushPlayViewController];
+            inputView.onUserInputVideoURLBlock = ^(NSString *_Nonnull videoURL, LiveShareVideoDirection videoDirection) {
+              [LiveShareDataManager shared].roomModel.videoURL = videoURL;
+              [LiveShareDataManager shared].roomModel.videoDirection = videoDirection;
+
+              [weakSelf pushPlayViewController];
             };
-        }
-            break;
-            
+        } break;
+
         default:
             break;
     }
 }
 
 #pragma mark - LiveShareRTCManagerDelegate
+
 - (void)liveShareRTCManager:(LiveShareRTCManager *)manager onFirstRemoteVideoFrameDecoded:(NSString *)userID {
     if (self.playController) {
         [self.playController updateUserVideoRender];
-    }
-    else {
+    } else {
         [self updateUserVideoRender];
     }
 }
@@ -138,8 +140,7 @@ LiveShareRTCManagerDelegate
 - (void)liveShareRTCManager:(LiveShareRTCManager *)manager onLocalAudioPropertiesReport:(NSInteger)volume {
     if (self.playController) {
         [self.playController updateLocalUserVolume:volume];
-    }
-    else {
+    } else {
         [self.userListComponent updateLocalUserVolume:volume];
     }
 }
@@ -147,8 +148,7 @@ LiveShareRTCManagerDelegate
 - (void)liveShareRTCManager:(LiveShareRTCManager *)manager onReportRemoteUserAudioVolume:(NSDictionary<NSString *,NSNumber *> *)volumeInfo {
     if (self.playController) {
         [self.playController updateRemoteUserVolume:volumeInfo];
-    }
-    else {
+    } else {
         [self.userListComponent updateRemoteUserVolume:volumeInfo];
     }
 }
@@ -161,11 +161,11 @@ LiveShareRTCManagerDelegate
     if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         return;
     }
-    
+
     [[LiveShareDataManager shared] addUser:userModel];
     if (self.playController) {
         [self.playController updateUserVideoRender];
-        
+
         LiveShareIMModel *model = [[LiveShareIMModel alloc] init];
         model.userModel = userModel;
         model.isJoin = YES;
@@ -174,10 +174,10 @@ LiveShareRTCManagerDelegate
         [self updateUserVideoRender];
     }
 }
+
 /// 用户退房
 /// @param userModel User model
 - (void)onUserLeaved:(LiveShareUserModel *)userModel {
-    
     /// 审核被离房
     if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         if (self.playController) {
@@ -187,17 +187,16 @@ LiveShareRTCManagerDelegate
         }
         return;
     }
-    
+
     [[LiveShareDataManager shared] removeUser:userModel];
     if (self.playController) {
         [self.playController updateUserVideoRender];
-        
+
         LiveShareIMModel *model = [[LiveShareIMModel alloc] init];
         model.userModel = userModel;
         model.isJoin = NO;
         [self.playController addIMModel:model];
-    }
-    else {
+    } else {
         [self updateUserVideoRender];
     }
 }
@@ -208,14 +207,13 @@ LiveShareRTCManagerDelegate
 /// @param videoURL Video URL
 /// @param videoDirection Video direction
 - (void)onUpdateRoomScene:(NSString *)roomID scene:(LiveShareRoomStatus)scene videoURL:(NSString *)videoURL videoDirection:(LiveShareVideoDirection)videoDirection {
-    
     /// 主播在接口请求处处理
     if ([LiveShareDataManager shared].isHost) {
         return;
     }
-    
+
     [LiveShareDataManager shared].roomModel.roomStatus = scene;
-    
+
     /// 改变场景为聊天
     if (scene == LiveShareRoomStatusChat && self.playController) {
         [self.playController popToRoomViewController];
@@ -253,11 +251,10 @@ LiveShareRTCManagerDelegate
 - (void)onUserMediaUpdated:(NSString *)roomID userModel:(LiveShareUserModel *)userModel {
     // 更新数据源
     [[LiveShareDataManager shared] updateUserMedia:userModel];
-    
+
     if (self.playController) {
         [self.playController onUserMediaUpdated:roomID userModel:userModel];
-    }
-    else {
+    } else {
         [self updateUserVideoRender];
     }
 }
@@ -266,19 +263,18 @@ LiveShareRTCManagerDelegate
 /// @param userModel User model
 /// @param message Message
 - (void)onReceivedUserMessage:(LiveShareUserModel *)userModel message:(NSString *)message {
-    
     /// 自己发的消息不处理，发送时已经添加了
     if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         return;
     }
-    
+
     LiveShareIMModel *model = [[LiveShareIMModel alloc] init];
     NSString *imMessage = [NSString stringWithFormat:@"%@：%@",
-                           userModel.name,
-                           message];
+                                                     userModel.name,
+                                                     message];
     model.userModel = userModel;
     model.message = imMessage;
-    
+
     [self.playController addIMModel:model];
 }
 
@@ -286,33 +282,65 @@ LiveShareRTCManagerDelegate
 /// @param roomID RoomID
 /// @param type type
 - (void)onRoomClosed:(NSString *)roomID type:(LiveShareRoomCloseType)type {
-   
-    // 触发审核、超时、角色是观众需要退出房间
-    BOOL needQuit = (type == LiveShareRoomCloseTypeReview || type == LiveShareRoomCloseTypeTimeout || ![LiveShareDataManager shared].isHost);
-    
-    if (!needQuit) {
-        return;
-    }
-    
-    if (type == LiveShareRoomCloseTypeReview) {
-        [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_review") delay:0.8];
-    }
-    else if (type == LiveShareRoomCloseTypeTimeout && [LiveShareDataManager shared].isHost) {
-        [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_timeout") delay:0.8];
-    } else {
-        if (![LiveShareDataManager shared].isHost) {
-            [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_host") delay:0.8];
-        }
-    }
-    
     if (self.playController) {
         [self.playController popToCreateRoomViewController];
     } else {
         [self quitRoom];
     }
+    
+    if (type == LiveShareRoomCloseTypeReview) {
+        [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_review") delay:0.8];
+    } else {
+        if ([LiveShareDataManager shared].isHost) {
+            if (type == LiveShareRoomCloseTypeTimeout) {
+                [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_timeout") delay:0.8];
+            } else {
+                [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_host") delay:0.8];
+            }
+        } else {
+            [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_host") delay:0.8];
+        }
+    }
 }
 
-#pragma mark - privateMethods
+#pragma mark - load Data
+
+- (void)reconnectLiveRoom {
+    __weak __typeof(self) wself = self;
+    [LiveShareRTSManager reconnectWithBlock:^(LiveShareRoomModel * _Nonnull roomModel,
+                                              NSArray<LiveShareUserModel *> * _Nonnull userList,
+                                              RTMACKModel * _Nonnull model) {
+        if (model.result) {
+            [[LiveShareDataManager shared] addUserList:userList];
+            [LiveShareDataManager shared].roomModel = roomModel;
+            if (wself.playController) {
+                [wself.playController updateUserVideoRender];
+            } else {
+                [wself updateUserVideoRender];
+            }
+        } else if (model.code == RTMStatusCodeUserIsInactive ||
+                   model.code == RTMStatusCodeRoomDisbanded ||
+                   model.code == RTMStatusCodeUserNotFound) {
+            if (wself.playController) {
+                [wself.playController popToCreateRoomViewController];
+            } else {
+                [wself quitRoom];
+            }
+            [[ToastComponent shareToastComponent] showWithMessage:model.message delay:0.8];
+        }
+    }];
+}
+
+- (void)loadDataWithGetUserList {
+    __weak __typeof(self) wself = self;
+    [LiveShareRTSManager getUserListStatusWithBlock:^(NSArray<LiveShareUserModel *> * _Nonnull userList, RTMACKModel * _Nonnull model) {
+        [[LiveShareDataManager shared] addUserList:userList];
+        [wself updateUserVideoRender];
+    }];
+}
+
+#pragma mark - Private Action
+
 - (void)setupViews {
     [self userListComponent];
     
@@ -332,8 +360,6 @@ LiveShareRTCManagerDelegate
 
 - (void)updateUserVideoRender {
     [self.userListComponent updateData];
-//    self.userListComponent.fullUserModel = [[LiveShareDataManager shared] getFullUserModel];
-//    self.userListComponent.dataArray = [[LiveShareDataManager shared] getUserListWithoutFullUserList];
 }
 
 /// 更新媒体状态
@@ -347,36 +373,21 @@ LiveShareRTCManagerDelegate
     }];
 }
 
-/// 相同用户加入被踢离房
-- (void)sameUserJoinRoomLeave {
-    
-    if (self.playController) {
-        [self.playController destroy];
-    }
-    [self.navigationController popToRootViewControllerAnimated:YES];
-    
-    [[LiveShareRTCManager shareRtc] leaveChannel];
-    [[ToastComponent shareToastComponent] showWithMessage:veString(@"duplicate_login_tip") delay:0.8];
-}
-
 #pragma mark - actions
 - (void)leaveButtonClick {
-    
     if ([LiveShareDataManager shared].isHost) {
         __weak typeof(self) weakSelf = self;
         AlertActionModel *alertCancelModel = [[AlertActionModel alloc] init];
         alertCancelModel.title = veString(@"cancel");
         AlertActionModel *alertModel = [[AlertActionModel alloc] init];
         alertModel.title = veString(@"sure");
-        alertModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
-            if ([action.title isEqualToString:veString(@"sure")]) {
-                
-                [weakSelf requestLeaveRoom];
-            }
+        alertModel.alertModelClickBlock = ^(UIAlertAction *_Nonnull action) {
+          if ([action.title isEqualToString:veString(@"sure")]) {
+              [weakSelf requestLeaveRoom];
+          }
         };
-        [[AlertActionManager shareAlertActionManager] showWithMessage:veString(@"exit_and_dismiss_room") actions:@[alertCancelModel, alertModel]];
-    }
-    else {
+        [[AlertActionManager shareAlertActionManager] showWithMessage:veString(@"exit_and_dismiss_room") actions:@[ alertCancelModel, alertModel ]];
+    } else {
         [self requestLeaveRoom];
     }
 }
@@ -402,6 +413,11 @@ LiveShareRTCManagerDelegate
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     
     [[AlertActionManager shareAlertActionManager] dismiss:nil];
+    
+    if (self.playController) {
+        [self.playController destroy];
+    }
+    [[LiveShareRTCManager shareRtc] leaveChannel];
 }
 
 #pragma mark - getter

@@ -7,7 +7,7 @@
 
 ## 前置条件
 
-- [Xcode](https://developer.apple.com/download/all/?q=Xcode) 12.0+
+- [Xcode](https://developer.apple.com/download/all/?q=Xcode) 14.0+
 	
 
 - iOS 12.0+ 真机
@@ -40,16 +40,14 @@
 2. 执行 `pod install` 命令构建工程
 
     <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_62762043564f7f67ea64189cc636b14b.png" width="500px" >	
-3. 进入 `LiveShareDemo/iOS/veRTC_Demo_iOS` 根目录，使用 Xcode 打开 `veRTC_Demo.xcworkspace`
+3. 进入 `LiveShareDemo/iOS/veRTC_Demo_iOS` 根目录，使用 Xcode 打开 `veRTC_Demo.xcworkspace`<br>
     <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_e5d2cf81f47db67c34bfd12364c5f0c2.png" width="500px" >		
 
-4. 在 Xcode 中打开 `Pods/Development Pods/Core/BuildConfig.h` 文件
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_5047a72b2a8f3340a1b302fe28b4d9e5.png" width="500px" >	
-
-
-5. 填写 **LoginUrl** <br>
-当前你可以使用 **https://common.rtc.volcvideo.com/rtc_demo_special/login** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。<br>
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_464d44a08f6505d311757e52c6e6d61b.png" width="500px" >
+4. 在 Xcode 中打开 `Pods/Development Pods/Core/BuildConfig.h` 文件<br>
+    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_0548899b170c606d3fe53adb7c670d4a.jpeg" width="500px" >	
+5. 填写 **HeadUrl**<br>
+    当前你可以使用 **https://common.rtc.volcvideo.com/rtc_demo_special** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。<br>
+    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_bfd188ba8820fd30621ba0b3d4ae57b2.jpeg" width="500px" >
 
 6. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**
 使用在控制台获取的 **APPID、APPKey、AccessKeyID 和 SecretAccessKey** 填写到 `BuildConfig.h`文件的对应位置。<br>

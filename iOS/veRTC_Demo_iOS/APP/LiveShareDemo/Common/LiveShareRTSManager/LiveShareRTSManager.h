@@ -87,6 +87,17 @@ typedef NS_ENUM(NSInteger, LiveShareRoomCloseType) {
 /// @param block Callback
 + (void)clearUser:(void (^)(RTMACKModel *model))block;
 
+/// 断网重连
+/// @param block Callback
++ (void)reconnectWithBlock:(void (^)(LiveShareRoomModel *roomModel,
+                                     NSArray<LiveShareUserModel *> *userList,
+                                     RTMACKModel *model))block;
+
+/// 获取房间内观众列表
+/// @param block Callback
++ (void)getUserListStatusWithBlock:(void (^)(NSArray<LiveShareUserModel *> *userList,
+                                             RTMACKModel *model))block;
+
 #pragma mark - Notification Message
 
 /// 用户进房通知

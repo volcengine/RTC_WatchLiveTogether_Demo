@@ -195,6 +195,10 @@ public class VideoView extends FrameLayout implements Observer {
      * 展示/隐藏全屏功能按钮
      */
     public void enableFullScreen(boolean enable) {
+        if (isFullScreen()) {
+            exitFullScreen();
+        }
+
         mEnterFullScreenBtn.setVisibility(enable ? VISIBLE : GONE);
     }
 

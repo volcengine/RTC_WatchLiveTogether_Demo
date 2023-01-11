@@ -2,8 +2,8 @@
 //  FeedShareBottomButtonsView.h
 //  veRTC_Demo
 //
-//  Created by bytedance on 2022/1/5.
-//  Copyright © 2022 bytedance. All rights reserved.
+//  Created by   on 2022/1/5.
+//  Copyright © 2022  . All rights reserved.
 //
 
 #import "LiveShareBottomButtonsView.h"

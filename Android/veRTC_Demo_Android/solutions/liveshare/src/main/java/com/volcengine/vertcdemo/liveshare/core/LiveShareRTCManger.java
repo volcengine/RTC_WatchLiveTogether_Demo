@@ -15,6 +15,7 @@ import com.ss.bytertc.engine.RTCVideo;
 import com.ss.bytertc.engine.UserInfo;
 import com.ss.bytertc.engine.VideoCanvas;
 import com.ss.bytertc.engine.data.AudioPropertiesConfig;
+import com.ss.bytertc.engine.data.CameraId;
 import com.ss.bytertc.engine.data.LocalAudioPropertiesInfo;
 import com.ss.bytertc.engine.data.MirrorType;
 import com.ss.bytertc.engine.data.RemoteAudioPropertiesInfo;
@@ -41,6 +42,8 @@ import com.volcengine.vertcdemo.liveshare.bean.event.RTCRemoteUserSpeakStatusEve
 import com.volcengine.vertcdemo.liveshare.bean.event.RTCUserJoinEvent;
 import com.volcengine.vertcdemo.liveshare.bean.event.RTCUserLeaveEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observer;
 
 public class LiveShareRTCManger {
@@ -74,6 +77,11 @@ public class LiveShareRTCManger {
             mRTCVideo.startAudioCapture();
         }
         muteLocalAudioStream(!isMicOn);
+
+        mRTCVideo.switchCamera(
+                LiveShareDataManager.getInstance().getCameraMicManager().isFrontCamera()
+                        ? CameraId.CAMERA_ID_FRONT
+                        : CameraId.CAMERA_ID_BACK);
 
         setLocalVideoMirror();
     };

@@ -35,7 +35,7 @@
 
         <activity
             android:name=".feature.LiveShareActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout"
             android:keepScreenOn="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"

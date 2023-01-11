@@ -96,12 +96,29 @@ public class LiveShareDataManager {
         return mAudioConfig;
     }
 
-    public void resetAudioConfig(){
+    /**
+     * 重置所有音量设置为默认
+     */
+    public void resetAudioConfig() {
+        resetVideoVolume();
+        resetUserVolume();
+    }
+
+    /**
+     * 重置通话音量为默认值
+     */
+    public void resetVideoVolume() {
         mAudioConfig.setVideoVolume(AudioConfig.DEFAULT_VIDEO_VOLUME);
+        VodAudioProcessor.mixAudioGain = mAudioConfig.getVideoVolume();
+    }
+
+    /**
+     * 重置视频播放音量为默认值
+     */
+    public void resetUserVolume() {
         mAudioConfig.setUserVolume(AudioConfig.DEFAULT_USER_VOLUME);
-        if (mRTCManger != null){
+        if (mRTCManger != null) {
             mRTCManger.adjustUserVolume(mAudioConfig.getUserVolume());
-            VodAudioProcessor.mixAudioGain = mAudioConfig.getVideoVolume();
         }
     }
 

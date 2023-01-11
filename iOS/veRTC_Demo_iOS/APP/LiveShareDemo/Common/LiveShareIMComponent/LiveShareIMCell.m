@@ -34,7 +34,7 @@
                   withText:model.message
                    inLabel:self.roomNameLabel];
     } else {
-        NSString *unitStr = model.isJoin ? @"加入了房间" : @"离开房间";
+        NSString *unitStr = model.isJoin ? @"加入了房间" : @"退出了房间";
         NSString *roomName = [NSString stringWithFormat:@"%@ %@", model.userModel.name, unitStr];
         [self setLineSpace:5
                   withText:roomName
