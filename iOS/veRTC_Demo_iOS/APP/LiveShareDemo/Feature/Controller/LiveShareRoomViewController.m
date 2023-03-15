@@ -34,7 +34,7 @@ LiveShareRTCManagerDelegate
 
 @implementation LiveShareRoomViewController
 
-- (instancetype)init {
+- (instancetype)initWithRoomModel:(LiveShareRoomModel *)roomModel {
     if (self = [super init]) {
         
         [UIApplication sharedApplication].idleTimerDisabled = YES;
@@ -49,7 +49,10 @@ LiveShareRTCManagerDelegate
                 // 断网重连
                 [wself reconnectLiveRoom];
             }
+            [wself loadDataWithGetUserList];
         };
+        
+        [[LiveShareRTCManager shareRtc] joinChannelWithToken:roomModel.rtcToken roomID:roomModel.roomID uid:[LocalUserComponent userModel].uid];
     }
     return self;
 }
@@ -61,8 +64,6 @@ LiveShareRTCManagerDelegate
     
     // resume local render effect
     [self.beautyCompoments resumeLocalEffect];
-    
-    [self loadDataWithGetUserList];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -72,8 +73,10 @@ LiveShareRTCManagerDelegate
     self.buttonsView.enableAudio = [LiveShareMediaModel shared].enableAudio;
     [[LiveShareRTCManager shareRtc] muteLocalAudio:![LiveShareMediaModel shared].enableAudio];
     [[LiveShareRTCManager shareRtc] enableLocalVideo:[LiveShareMediaModel shared].enableVideo];
-    
-    // show local render view
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     [self updateUserVideoRender];
 }
 
@@ -282,12 +285,6 @@ LiveShareRTCManagerDelegate
 /// @param roomID RoomID
 /// @param type type
 - (void)onRoomClosed:(NSString *)roomID type:(LiveShareRoomCloseType)type {
-    if (self.playController) {
-        [self.playController popToCreateRoomViewController];
-    } else {
-        [self quitRoom];
-    }
-    
     if (type == LiveShareRoomCloseTypeReview) {
         [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_review") delay:0.8];
     } else {
@@ -300,6 +297,12 @@ LiveShareRTCManagerDelegate
         } else {
             [[ToastComponent shareToastComponent] showWithMessage:veString(@"live_closed_host") delay:0.8];
         }
+    }
+    
+    if (self.playController) {
+        [self.playController popToCreateRoomViewController];
+    } else {
+        [self quitRoom];
     }
 }
 
@@ -335,7 +338,11 @@ LiveShareRTCManagerDelegate
     __weak __typeof(self) wself = self;
     [LiveShareRTSManager getUserListStatusWithBlock:^(NSArray<LiveShareUserModel *> * _Nonnull userList, RTMACKModel * _Nonnull model) {
         [[LiveShareDataManager shared] addUserList:userList];
-        [wself updateUserVideoRender];
+        if (wself.playController) {
+            [wself.playController updateUserVideoRender];
+        } else {
+            [wself updateUserVideoRender];
+        }
     }];
 }
 
@@ -451,7 +458,7 @@ LiveShareRTCManagerDelegate
 
 - (LiveShareUserListComponent *)userListComponent {
     if (!_userListComponent) {
-        _userListComponent = [[LiveShareUserListComponent alloc] initWithSuperview:self.view];
+        _userListComponent = [[LiveShareUserListComponent alloc] initWithSuperview:self.view isRoomVC:YES];
         _userListComponent.shouldSwitchFullUser = YES;
     }
     return _userListComponent;

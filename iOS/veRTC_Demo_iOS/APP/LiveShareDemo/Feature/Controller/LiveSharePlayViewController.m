@@ -83,8 +83,11 @@ LiveShareVideoComponentDelegate
     [[LiveShareRTCManager shareRtc] muteLocalAudio:![LiveShareMediaModel shared].enableAudio];
     [[LiveShareRTCManager shareRtc] enableLocalVideo:[LiveShareMediaModel shared].enableVideo];
     
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     [self updateUserVideoRender];
-    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -611,7 +614,7 @@ LiveShareVideoComponentDelegate
 
 - (LiveShareUserListComponent *)userListComponent {
     if (!_userListComponent) {
-        _userListComponent = [[LiveShareUserListComponent alloc] initWithSuperview:self.view];
+        _userListComponent = [[LiveShareUserListComponent alloc] initWithSuperview:self.view isRoomVC:NO];
         _userListComponent.shouldSwitchFullUser = NO;
     }
     return _userListComponent;

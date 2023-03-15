@@ -653,6 +653,7 @@ public class LiveShareActivity extends BaseActivity {
      */
     private void removeShareFragment() {
         if (mShareFragment == null) return;
+        mShareFragment.resetToPortrait();
         getSupportFragmentManager().beginTransaction()
                 .remove(mShareFragment)
                 .commitAllowingStateLoss();

@@ -258,9 +258,7 @@ UIGestureRecognizerDelegate
 
 - (void)jumpToRoomViewController:(LiveShareRoomModel *)roomModel {
     
-    [[LiveShareRTCManager shareRtc] joinChannelWithToken:roomModel.rtcToken roomID:roomModel.roomID uid:[LocalUserComponent userModel].uid];
-    
-    LiveShareRoomViewController *roomViewController = [[LiveShareRoomViewController alloc] init];
+    LiveShareRoomViewController *roomViewController = [[LiveShareRoomViewController alloc] initWithRoomModel:roomModel];
     
     if (roomModel.videoURL.length > 0 && roomModel.roomStatus == LiveShareRoomStatusShare) {
         LiveSharePlayViewController *playController = [[LiveSharePlayViewController alloc] init];

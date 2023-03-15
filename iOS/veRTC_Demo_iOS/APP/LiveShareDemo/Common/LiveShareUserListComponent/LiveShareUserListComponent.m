@@ -36,13 +36,16 @@ static CGFloat const kVerticalSpaceWidth = 6;
 
 @property (nonatomic, assign) BOOL needShowHeaderUser;
 
+@property (nonatomic, assign) BOOL isRoomVC;
+
 @end
 
 @implementation LiveShareUserListComponent
 
-- (instancetype)initWithSuperview:(UIView *)superView {
+- (instancetype)initWithSuperview:(UIView *)superView isRoomVC:(BOOL)isRoomVC {
     if (self = [super init]) {
         self.superView = superView;
+        self.isRoomVC = isRoomVC;
         
         [self setupViews];
         
@@ -135,10 +138,15 @@ static CGFloat const kVerticalSpaceWidth = 6;
 
 /// 初始化UI
 - (void)setupViews {
-    [self.superView addSubview:self.fullVideoView];
-    [self.superView addSubview:self.collectionView];
-    [self.superView addSubview:self.userHiddenView];
-    
+    if (self.isRoomVC) {
+        [self.superView insertSubview:self.userHiddenView atIndex:0];
+        [self.superView insertSubview:self.collectionView atIndex:0];
+        [self.superView insertSubview:self.fullVideoView atIndex:0];
+    } else {
+        [self.superView addSubview:self.fullVideoView];
+        [self.superView addSubview:self.collectionView];
+        [self.superView addSubview:self.userHiddenView];
+    }
     
     [self.localUserCell mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(kItemWidth, kItemWidth));

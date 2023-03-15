@@ -101,8 +101,7 @@
     if (status == TVLPlayerItemStatusReadyToRender) {
         
         videoState = LiveShareVideoStateSuccess;
-    }
-    else if (status == TVLPlayerItemStatusFailed) {
+    } else if (status == TVLPlayerItemStatusFailed) {
         
         videoState = LiveShareVideoStateFailure;
         error = manager.error;
@@ -110,6 +109,7 @@
     } else if (status == TVLPlayerItemStatusCompleted) {
         
         videoState = LiveShareVideoStateCompleted;
+        [manager stop];
     }
     
     if ([self.delegate respondsToSelector:@selector(liveShareVideoComponent:onVideoStateChanged:error:)]) {

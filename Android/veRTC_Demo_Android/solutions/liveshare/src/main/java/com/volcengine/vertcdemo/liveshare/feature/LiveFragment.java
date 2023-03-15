@@ -227,6 +227,12 @@ public class LiveFragment extends Fragment {
         mParseUrlDialog.show();
     }
 
+    public void resetToPortrait() {
+        if (mVideoView != null) {
+            mVideoView.exitFullScreen();
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();

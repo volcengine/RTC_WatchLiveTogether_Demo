@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, weak) LiveSharePlayViewController *playController;
 
+- (instancetype)initWithRoomModel:(LiveShareRoomModel *)roomModel;
+
 /// 新用户进房
 /// @param userModel User model
 - (void)onUserJoined:(LiveShareUserModel *)userModel;

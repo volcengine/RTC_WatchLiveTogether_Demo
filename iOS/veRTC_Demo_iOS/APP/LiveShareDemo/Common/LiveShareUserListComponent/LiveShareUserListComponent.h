@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Initialization
 /// @param superView Super view
-- (instancetype)initWithSuperview:(UIView *)superView;
+- (instancetype)initWithSuperview:(UIView *)superView isRoomVC:(BOOL)isRoomVC;
 
 - (void)updateData;
 

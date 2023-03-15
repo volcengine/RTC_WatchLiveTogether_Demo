@@ -68,6 +68,9 @@ public class LivePlayer extends Observable {
 
             @Override
             public void onCompletion() {
+                if (mLivePlayer != null){
+                    mLivePlayer.stop();
+                }
                 notifyObservers(new PlayStateCompletion(mCurrentLiveURL.mainURL));
             }
 
