@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="70dp"
+    android:layout_height="70dp"
+    android:background="@drawable/bg_small_video_no_speak_border"
+    android:padding="1dp"
+    tools:ignore="ContentDescription">
+
+    <FrameLayout
+        android:id="@+id/small_video_container_fl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E0E0E0"
+        app:cardCornerRadius="4dp" />
+
+    <ImageView
+        android:id="@+id/mic_on_off_iv"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:background="@drawable/bg_small_video_mic_status"
+        android:padding="5dp"
+        android:src="@drawable/ic_mic_on" />
+
+</FrameLayout>

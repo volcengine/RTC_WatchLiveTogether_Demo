@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_fl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/black">
+
+    <ImageView
+        android:id="@+id/camera_status_iv"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="170dp"
+        android:background="@drawable/bg_round"
+        android:padding="30dp"
+        android:src="@drawable/ic_camera_off_white" />
+
+    <FrameLayout
+        android:id="@+id/preview_container_fl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="54dp"
+        android:layout_marginRight="54dp"
+        android:layout_marginBottom="140dp"
+        android:background="@drawable/bg_join_zone"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp">
+
+        <LinearLayout
+            android:id="@+id/room_id_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="vertical"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <EditText
+                android:id="@+id/room_id_et"
+                style="@style/EditTextLg"
+                android:layout_width="match_parent"
+                android:hint="@string/please_enter_room_id"
+                android:lines="1"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textColorHint="#86909C" />
+
+            <View
+                style="@style/DividerLine"
+                android:layout_marginTop="10dp"
+                android:background="#86909C" />
+
+            <TextView
+                android:id="@+id/room_id_waring_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/no_more_than_characters"
+                android:textColor="#F65656"
+                android:textSize="14sp"
+                android:visibility="invisible" />
+
+        </LinearLayout>
+
+        <com.volcengine.vertcdemo.core.widget.PressedImageView
+            android:id="@+id/mic_on_off_iv"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="32dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_mic_on"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/camera_on_off_iv"
+            app:layout_constraintTop_toBottomOf="@+id/room_id_ll" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/microphone"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toLeftOf="@id/mic_on_off_iv"
+            app:layout_constraintRight_toRightOf="@id/mic_on_off_iv"
+            app:layout_constraintTop_toBottomOf="@id/mic_on_off_iv" />
+
+        <com.volcengine.vertcdemo.core.widget.PressedImageView
+            android:id="@+id/camera_on_off_iv"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginBottom="40dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_camera_on"
+            app:layout_constraintLeft_toRightOf="@id/mic_on_off_iv"
+            app:layout_constraintRight_toLeftOf="@id/effect_setting"
+            app:layout_constraintTop_toTopOf="@id/mic_on_off_iv" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/camera"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toLeftOf="@id/camera_on_off_iv"
+            app:layout_constraintRight_toRightOf="@id/camera_on_off_iv"
+            app:layout_constraintTop_toBottomOf="@id/camera_on_off_iv" />
+
+        <com.volcengine.vertcdemo.core.widget.PressedImageView
+            android:id="@+id/effect_setting"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginLeft="32dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_video_effect"
+            app:layout_constraintLeft_toRightOf="@id/camera_on_off_iv"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/camera_on_off_iv" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/effect_button_message"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toLeftOf="@id/effect_setting"
+            app:layout_constraintRight_toRightOf="@id/effect_setting"
+            app:layout_constraintTop_toBottomOf="@id/effect_setting" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/close_btn"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="start"
+        android:layout_marginTop="25dp"
+        android:layout_marginStart="18dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_close" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="55dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/create_live_tip_bg"
+            android:paddingLeft="32dp"
+            android:paddingTop="4dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="4dp"
+            android:text="@string/application_just_for_experiencing"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/warn_ic"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="4dp"
+            android:src="@drawable/icon_warning"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/join_room_btn"
+        android:layout_width="267dp"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="75dp"
+        android:background="@drawable/bg_create_share"
+        android:gravity="center"
+        android:text="@string/enter_the_room"
+        android:textColor="@color/white" />
+
+</FrameLayout>

@@ -1,0 +1,35 @@
+<resources>
+    <string name="please_enter_room_id">Please enter Room ID</string>
+    <string name="Initialize_rtc_first">You need to initialize RTC first</string>
+    <string name="room_id_field_must_not_blank">Room ID can not be blank</string>
+    <string name="username_userid_must_blank">Username and UserID can not be blank</string>
+    <string name="application_just_for_experiencing">This application is just used for experiencing. The duration of a meeting can\'t exceed 20 minutes in this application.</string>
+    <string name="failed_get_room_information_when_entering">Failed to get room information when entering the room</string>
+    <string name="failed_generate_token_when_entering_room">Failed to generate RTC Token when entering the room</string>
+    <string name="user_already_in_room">The user is already in the room.</string>
+    <string name="room_you_join_full">The room you are trying to join is full.</string>
+    <string name="please_enter_url">Please enter URL</string>
+    <string name="portrait_mode">Portrait Mode</string>
+    <string name="landscape_mode">Landscape mode</string>
+    <string name="live_together">Watch Together</string>
+    <string name="please_enter_copyrighted_live_url">Please enter your copyrighted LIVE URL</string>
+    <string name="audio_ducking">Audio Ducking</string>
+    <string name="video_volume">Video volume</string>
+    <string name="audio_volume">Audio volume</string>
+    <string name="please_wait_parsing_url">Please wait when parsing URL</string>
+    <string name="failed_parse_url">Failed to parse this URL. Please try another one.</string>
+    <string name="active_full_screen_mode">Active full-screen mode</string>
+    <string name="windows">Windows</string>
+    <string name="cannot_send_blank_message">Can\'t send a blank message</string>
+    <string name="room_is_closed">The room is closed</string>
+    <string name="duration_live_has_reached_minutes">The duration of this LIVE has reached 20 minutes.</string>
+    <string name="live_has_ended">LIVE has ended.</string>
+    <string name="are_you_sure_to_exit_room">Are you sure to exit and close the room?</string>
+    <string name="live_ended_please_enter_new">LIVE has ended. Please enter a new URL</string>
+    <string name="app_version_v_xxx_sdk_version_v_xxx">APP Version v%s / SDK Version v%s</string>
+    <string name="url_only_use_once_a_day">You can use a URL only once a day. Please try other URLs.</string>
+    <string name="live_joined_the_room">joined room</string>
+    <string name="live_left_room">left room</string>
+    <string name="live_room_id_xxx">Room ID : %s</string>
+    <string name="please_enter_numbers_english_letters">Numbers, letters and @_- are allowed.</string>
+</resources>
