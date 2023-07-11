@@ -16,9 +16,9 @@ import com.volcengine.vertcdemo.liveshare.BuildConfig;
 import com.volcengine.vertcdemo.utils.AppUtil;
 
 public class TTSdkHelper {
+
     private static final String TT_VIDEO_PLAYER_APP_ID = "260323";
     private static final String TT_VIDEO_PLAYER_APP_NAME = "vertcdemo";
-
 
     public static void initTTVodSdk() {
         Env.init(new Config.Builder()

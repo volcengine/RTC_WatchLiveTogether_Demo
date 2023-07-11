@@ -213,5 +213,6 @@ static void audio_release(void *context) {
         _audioWrapper = nil;
     }
 }
+#pragma mark - Getter
 
 @end

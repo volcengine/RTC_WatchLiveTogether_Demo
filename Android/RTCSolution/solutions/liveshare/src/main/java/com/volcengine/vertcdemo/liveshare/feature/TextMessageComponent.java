@@ -93,7 +93,10 @@ public class TextMessageComponent {
      * @param fragment 输入面板
      * @param message 要发送的消息
      */
-    private void onSendMessage(InputTextDialogFragment fragment, String message) {
+    private void onSendMessage(InputTextDialogFragment fragment, String message, boolean sent) {
+        if (!sent) {
+            return;
+        }
         if (TextUtils.isEmpty(message)) {
             fragment.dismiss();
             return;

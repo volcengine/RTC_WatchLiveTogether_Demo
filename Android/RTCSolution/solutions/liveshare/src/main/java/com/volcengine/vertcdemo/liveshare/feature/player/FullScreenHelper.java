@@ -11,7 +11,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.view.DisplayCutout;
 import android.view.Gravity;
-import android.view.TextureView;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 public class FullScreenHelper {
     private boolean mInFullScreen;
     private final VideoView mVideoView;
-    private final TextureView mVideoRenderView;
+    private final SurfaceView mVideoRenderView;
     private FrameLayout mFullScreenContainer;
     private ViewGroup mNonFullScreenContainer;
     private ViewGroup.LayoutParams mNonFullScreenLp;

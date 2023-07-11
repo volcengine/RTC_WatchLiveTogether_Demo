@@ -48,9 +48,8 @@ dependencies {
         exclude group: 'com.bytedanceapi', module: 'ttsdk-ttrtcbase'
     }
 
-
-    implementation 'commons-net:commons-net:3.6'
     implementation project(':component:ToolKit')
+    implementation 'commons-net:commons-net:3.6'
 
     implementation project(":component:$JOIN_RTS_MODULE")
 
@@ -58,5 +57,4 @@ dependencies {
     implementation "com.google.code.gson:gson:$GsonVersion"
     implementation "com.github.bumptech.glide:glide:$GlideVersion"
     implementation "com.squareup.okhttp3:okhttp:$OkHttpVersion"
-
 }

@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateRemoteUserVolume:(NSDictionary *)volumeDict;
 
+// 设置水平方向布局
+- (void)layoutScrollDirectionHorizontal;
+
 @end
 
 NS_ASSUME_NONNULL_END

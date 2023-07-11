@@ -648,9 +648,6 @@ public class LiveShareActivity extends SolutionBaseActivity {
         if (isFirstPlay) {
             TargetScene scene = new TargetScene(Room.SCENE_CHAT);
             updateRoomSceneAndUi(scene, false);
-        } else {
-            // 非第一次解析失败，需要停在一起看页面。
-            SolutionToast.show(getString(R.string.failed_parse_url));
         }
     };
 

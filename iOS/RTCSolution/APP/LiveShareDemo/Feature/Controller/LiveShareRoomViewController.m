@@ -66,6 +66,14 @@ LiveShareRTCManagerDelegate
     [LiveShareMediaModel shared].enableAudio = self.buttonsView.enableAudio;
 }
 
+- (void)viewDidLayoutSubviews {
+    [self.navView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.left.right.top.equalTo(self.view);
+        make.height.mas_equalTo([DeviceInforTool getStatusBarHight] + 44);
+    }];
+    [self.userListComponent layoutScrollDirectionHorizontal];
+}
+
 #pragma mark - RTS Listener
 
 - (void)onUserJoined:(LiveShareUserModel *)userModel {

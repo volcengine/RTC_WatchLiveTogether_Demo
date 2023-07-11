@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.TextureView;
+import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -39,7 +39,7 @@ public class VideoView extends FrameLayout implements Observer {
     private FullScreenHelper mFullScreenHelper;
     private TextView mEnterFullScreenBtn;
     private ImageView mExitFullScreenBtn;
-    private TextureView mVideoRenderView;
+    private SurfaceView mVideoRenderView;
     private FrameLayout mFullScreenContainer;
 
     public VideoView(@NonNull Context context) {
@@ -56,7 +56,7 @@ public class VideoView extends FrameLayout implements Observer {
     }
 
     private void init() {
-        mVideoRenderView = new TextureView(getContext());
+        mVideoRenderView = new SurfaceView(getContext());
         addView(mVideoRenderView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         mExitFullScreenBtn = new ImageView(getContext());
@@ -255,7 +255,7 @@ public class VideoView extends FrameLayout implements Observer {
         return mLivePlayer.isPausing();
     }
 
-    public TextureView getVideoRenderView() {
+    public SurfaceView getVideoRenderView() {
         return mVideoRenderView;
     }
 
